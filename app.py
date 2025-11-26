@@ -1,5 +1,6 @@
 # app.py
 import os
+import nltk
 import re
 import json
 import tempfile
@@ -19,14 +20,20 @@ NLTK_DATA_DIR = os.environ.get("NLTK_DATA_DIR", "/opt/render/nltk_data")
 os.makedirs(NLTK_DATA_DIR, exist_ok=True)
 if NLTK_DATA_DIR not in nltk.data.path:
     nltk.data.path.append(NLTK_DATA_DIR)
-try:
-    nltk.data.find("tokenizers/punkt")
-except LookupError:
-    try:
-        nltk.download("punkt", download_dir=NLTK_DATA_DIR, quiet=True)
-    except Exception as e:
-        print("NLTK download failed:", e)
 
+# Ensure the required tokenizer resources are present (punkt and punkt_tab).
+# Try to find them; if missing, download quietly to NLTK_DATA_DIR.
+for res in ("tokenizers/punkt", "tokenizers/punkt_tab"):
+    try:
+        nltk.data.find(res)
+    except LookupError:
+        try:
+            # 'punkt_tab' is not always available via the same name in older NLTK
+            # but nltk.download accepts 'punkt_tab' per Sumy recommendation.
+            name = "punkt_tab" if res.endswith("punkt_tab") else "punkt"
+            nltk.download(name, download_dir=NLTK_DATA_DIR, quiet=True)
+        except Exception as e:
+            print(f"Failed to download NLTK resource {res}: {e}")
 # ---------------- Config ----------------
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 if not TELEGRAM_TOKEN:
