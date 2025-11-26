@@ -458,7 +458,7 @@ def webhook():
             activities = generate_activities(text)
             assessment = generate_assessment_questions(text)
             fill_template_and_send(chat_id, "Pasted Lesson", summary, objectives, activities, assessment, "Source: pasted by user")
-            return jsonify({"ok": True}")
+            return jsonify({"ok": True})
 
         if state == "await_grade":
             SESS[chat_id]["tmp"] = {"grade": txt}
